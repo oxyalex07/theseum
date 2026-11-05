@@ -1,0 +1,51 @@
+import { _electron } from '@playwright/test';
+import { mkdtemp, mkdir, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import assert from 'node:assert/strict';
+const directory=await mkdtemp(join(tmpdir(),'orbit-topbar-'));
+await mkdir('artifacts/verification',{recursive:true});
+let desktop;const errors=[];
+async function launch(){
+  const env={...process.env,THESEUS_USER_DATA_DIR:directory};
+  delete env.ELECTRON_RUN_AS_NODE;delete env.THESEUS_DEV_URL;delete env.THESEUS_SAMPLE_PREVIEW;
+  desktop=await _electron.launch({args:['.'],env});const page=await desktop.firstWindow();
+  page.on('pageerror',e=>errors.push(e.message));
+  page.on('console',m=>{if(['error','warning'].includes(m.type()))errors.push(m.text());});
+  await page.getByRole('button',{name:'Open your profile'}).waitFor();return page;
+}
+try{
+  let page=await launch();
+  const bell=page.getByRole('button',{name:/^Notifications/});
+  await bell.click();let dropdown=page.getByRole('dialog',{name:'Notifications',exact:true});
+  await dropdown.waitFor();assert.equal(await dropdown.locator('.notification-item').count(),4);
+  await page.screenshot({path:'artifacts/verification/notifications-dropdown.png'});
+  await page.keyboard.press('Escape');assert.equal(await dropdown.count(),0);assert.equal(await bell.evaluate(el=>el===document.activeElement),true);
+  await bell.click();await dropdown.getByRole('button',{name:'Mark all read'}).click();
+  await dropdown.getByText('You’re all caught up',{exact:true}).waitFor();assert.equal(await bell.locator('.dot').count(),0);
+  await page.getByRole('button',{name:'Open your profile'}).click();
+  await page.getByRole('heading',{name:'Profile',exact:true}).waitFor();assert.equal(await dropdown.count(),0);
+  assert.equal(await page.locator('.side,.insp').count(),0);
+  await page.getByLabel('Display name',{exact:true}).fill('   ');await page.getByRole('button',{name:'Save profile',exact:true}).click();
+  await page.getByRole('alert').filter({hasText:'Enter a display name.'}).waitFor();
+  await page.getByLabel('Display name',{exact:true}).fill('Alex Preview');
+  await page.getByLabel('About you',{exact:false}).fill('Building a calmer workspace for coding agents.');
+  await page.getByRole('button',{name:'Save profile',exact:true}).click();
+  await page.getByText('Profile saved on this device.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Open your profile'}).getByText('Alex Preview',{exact:true}).waitFor();
+  await page.getByLabel('Display name',{exact:true}).fill('Discard me');await page.getByRole('button',{name:'Cancel changes'}).click();
+  assert.equal(await page.getByLabel('Display name',{exact:true}).inputValue(),'Alex Preview');
+  await page.screenshot({path:'artifacts/verification/profile-page.png'});
+  await desktop.close();desktop=undefined;page=await launch();
+  await page.getByRole('button',{name:'Open your profile'}).click();
+  assert.equal(await page.getByLabel('Display name',{exact:true}).inputValue(),'Alex Preview');
+  assert.equal(await page.getByLabel('About you',{exact:false}).inputValue(),'Building a calmer workspace for coding agents.');
+  await page.getByRole('button',{name:'Back to Home',exact:true}).click();
+  await page.getByRole('heading',{name:/Good (morning|afternoon|evening), Alex Preview/}).waitFor();
+  await page.getByRole('button',{name:/^Notifications/}).click();dropdown=page.getByRole('dialog',{name:'Notifications',exact:true});
+  await dropdown.locator('.notification-item').first().click();await page.locator('.thread').waitFor();assert.equal(await dropdown.count(),0);
+  await page.getByRole('button',{name:/^Notifications/}).click();await dropdown.getByRole('button',{name:'Notification settings'}).click();
+  await page.getByRole('heading',{name:'Notifications & focus',exact:true}).waitFor();
+  assert.deepEqual(errors,[]);
+  console.log('PASS notification open/dismiss, Escape focus, read state, session link/settings; profile validation, save, cancel and full-restart persistence; no page or console errors');
+}finally{await desktop?.close();await rm(directory,{recursive:true,force:true});}

@@ -1,0 +1,30 @@
+name: Dependency audit
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+  # Packaging/release workflows must call this and depend on its success.
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Fresh dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@12.9.1
+      - name: Resolve the frozen dependency graph without native build scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      # Include dev dependencies: Electron is the shipped runtime even though
+      # it is declared as a devDependency. Registry failures must also fail CI.
+      - name: Query current advisories for all dependencies
+        run: pnpm audit:dependencies

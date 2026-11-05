@@ -1,0 +1,52 @@
+.session-overview { color:var(--fg-2); font-size:12px; line-height:1.65; }
+.session-overview section { padding:20px 18px; border-bottom:1px solid var(--line); min-width:0; }
+.session-overview section:last-child { border-bottom:0; }
+.session-overview h2 { font-size:15px; font-weight:600; color:var(--fg); }
+.session-overview h3 { font-size:12px; font-weight:600; color:var(--fg); }
+.session-overview p { margin:8px 0; overflow-wrap:anywhere; white-space:pre-wrap; }
+.overview-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.overview-heading h3 { display:flex; align-items:center; gap:8px; }
+.overview-heading h3>span,.overview-activity h3>span { color:var(--muted); font-weight:400; font-size:11px; }
+.overview-project { display:flex; align-items:flex-start; gap:7px; color:var(--muted); overflow-wrap:anywhere; }
+.overview-project .od-icon { flex-shrink:0; margin-top:3px; }
+.overview-activity { margin-top:18px; }
+.overview-activity h3 { display:flex; gap:8px; align-items:center; }
+.overview-activity p { max-height:130px; overflow:auto; font-size:11px; }
+.session-overview .overview-note { color:var(--muted); font-size:11px; }
+.overview-next { background:var(--bg-2); }
+.overview-next .btn { margin-top:4px; max-width:100%; white-space:normal; height:auto; min-height:28px; text-align:left; }
+.overview-link { display:inline-flex; align-items:center; gap:3px; font-size:11px; color:var(--violet-2); text-align:left; }
+.overview-link:hover { text-decoration:underline; text-underline-offset:3px; }
+.overview-files { margin:10px 0; }
+.overview-files button { display:flex; width:100%; gap:8px; align-items:center; text-align:left; padding:8px 0; }
+.overview-files button:hover { color:var(--violet-2); }
+.overview-files button>span { flex:1; min-width:0; overflow-wrap:anywhere; }
+.overview-files .od-icon,.overview-files code,.overview-files small { flex-shrink:0; }
+.overview-files code { font:10px var(--mono); color:var(--muted); }
+.overview-check-summary { display:flex; flex-wrap:wrap; gap:6px 14px; margin:10px 0; }
+.overview-checks li { display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:5px 0; }
+.overview-checks li>span { min-width:0; overflow-wrap:anywhere; }
+.overview-checks small { flex-shrink:0; font-size:9px; color:var(--muted); }
+.overview-check-error { margin:10px 0; color:var(--muted); font-size:11px; }
+.overview-check-error summary { cursor:pointer; }
+.overview-check-error p { overflow-wrap:anywhere; }
+.session-overview .overview-error { color:var(--red); }
+.session-overview .overview-success { color:var(--green); }
+.insp.session-inspector { grid-template-rows:auto minmax(0,1fr); }
+.session-inspector>.itabs { flex-wrap:wrap; padding:5px; gap:2px; }
+.session-inspector>.itabs button { flex-shrink:0; }
+.session-inspector>.itabs button.on { box-shadow:inset 0 -1px var(--violet); }
+.session-inspector button:focus-visible { outline:2px solid var(--violet); outline-offset:2px; }
+
+.session-inspector>.ibody:has(.session-overview) { padding:0; gap:0; }
+
+.insp.home-inspector { grid-template-rows:auto minmax(0,1fr); }
+.home-inspector>.itabs { flex-wrap:wrap; padding:5px; gap:2px; }
+.home-inspector>.ibody:has(.home-overview) { padding:0; gap:0; }
+.home-overview-picker { display:flex; flex-direction:column; align-items:flex-start; gap:10px; padding:18px; border-bottom:1px solid var(--line); }
+.home-overview-picker label { color:var(--fg); font-size:12px; font-weight:600; }
+.home-overview-picker select { width:100%; min-width:0; padding:8px; border:1px solid var(--line-2); border-radius:5px; background:var(--bg-2); color:var(--fg-2); font-size:12px; text-overflow:ellipsis; }
+.home-overview-empty { display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+.home-overview-empty>.od-icon { color:var(--violet-2); margin-top:6px; }
+.home-overview-empty p { margin:0 0 4px; }
+.home-inspector button:focus-visible,.home-inspector select:focus-visible { outline:2px solid var(--violet); outline-offset:2px; }

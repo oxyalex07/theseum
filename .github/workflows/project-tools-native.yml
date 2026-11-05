@@ -1,0 +1,50 @@
+name: Project tools native
+on:
+  pull_request:
+    paths:
+      - 'electron/project-*.ts'
+      - 'electron/research*.ts'
+      - 'shared/research.ts'
+      - 'tests/research.test.ts'
+      - 'electron/main.ts'
+      - 'electron/preload.ts'
+      - 'shared/project-tools.ts'
+      - 'src/components/project-*.tsx'
+      - 'scripts/prepare-pty.mjs'
+      - 'tests/project-*'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/project-tools-native.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@12.9.1
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Real PTY unit regressions
+        run: pnpm exec vitest run tests/project-tools.test.ts
+      - name: Research storage and anchored native export regressions
+        run: pnpm exec vitest run tests/research.test.ts
+      - name: Install Linux Electron dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libgbm1 libasound2t64
+      - name: Native Windows Electron terminal and preview
+        if: runner.os == 'Windows'
+        run: pnpm test:project-platform
+      - name: Native Linux Electron terminal and preview
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum pnpm test:project-platform
